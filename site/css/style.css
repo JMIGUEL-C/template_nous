@@ -1,0 +1,69 @@
+/* ===== Reset & base ===== */
+*{box-sizing:border-box}
+html,body{margin:0}
+img,svg{max-width:100%}
+body{font-family:'Montserrat',sans-serif;color:#4A3339;background:#FEFEFE;position:relative}
+
+@keyframes nfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+@keyframes nfade{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+@keyframes ntoast{from{opacity:0;transform:translateY(14px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes ntwinkle{0%,100%{opacity:.5;transform:scale(.9)}50%{opacity:1;transform:scale(1.05)}}
+@keyframes nmarquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+::selection{background:#F7C9D9;color:#4A3339}
+::-webkit-scrollbar{width:10px}
+::-webkit-scrollbar-thumb{background:#EBD3DD;border-radius:10px}
+
+/* ===== Product card hover CTA (desktop only; touch devices show it always) ===== */
+.prod-hover-bar{transition:transform .25s ease}
+@media (hover:hover) and (pointer:fine){
+  .prod-hover-bar{transform:translateY(100%)}
+  .prod-card:hover .prod-hover-bar{transform:translateY(0)}
+}
+
+/* ===== Header: swap desktop nav row for the compact mobile row ===== */
+.mobile-header-row{display:none}
+@media (max-width:768px){
+  .desktop-header-row{display:none !important}
+  .mobile-header-row{display:flex !important}
+}
+
+/* ===== UGC video: portrait on mobile ===== */
+@media (max-width:768px){
+  .ugc-video-section{min-height:0 !important;aspect-ratio:9/16 !important;width:100% !important}
+}
+
+/* ===== Category / collection grid ===== */
+.category-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(150px,100%),1fr));gap:16px}
+@media (min-width:900px){
+  .category-grid{grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr)) !important;gap:26px !important}
+}
+.category-list{grid-template-columns:1fr !important}
+.category-list .prod-card{flex-direction:row !important}
+.category-list .prod-card-img{aspect-ratio:1/1 !important;width:110px !important;flex:none !important;padding-bottom:0 !important;align-items:center !important}
+
+.view-btn{width:34px;height:34px;border:1px solid rgba(17,17,17,.2);background:#fff;color:#111;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.view-btn.active{border-color:#111;background:#111;color:#fff}
+
+/* ===== Slide-in drawers (cart / mobile nav / mobile search) =====
+   Toggle the `.open` class with JS; CSS handles the animation. */
+.drawer-overlay{position:fixed;inset:0;background:rgba(60,40,45,.42);backdrop-filter:blur(2px);z-index:120;opacity:0;pointer-events:none;transition:opacity .3s}
+.drawer-overlay.open{opacity:1;pointer-events:auto}
+.drawer-panel{position:fixed;top:0;height:100%;background:#FEFEFE;z-index:121;transition:transform .38s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column}
+.drawer-panel.from-right{right:0;width:390px;max-width:92vw;box-shadow:-16px 0 44px rgba(60,40,45,.22);transform:translateX(106%)}
+.drawer-panel.from-left{left:0;width:320px;max-width:88vw;box-shadow:16px 0 44px rgba(60,40,45,.22);transform:translateX(-106%)}
+.drawer-panel.from-right.narrow{width:340px}
+.drawer-panel.open{transform:translateX(0)}
+
+/* ===== Discount popup ===== */
+.popup-overlay{position:fixed;inset:0;background:rgba(60,40,45,.42);backdrop-filter:blur(2px);z-index:140;opacity:0;pointer-events:none;transition:opacity .35s}
+.popup-overlay.open{opacity:1;pointer-events:auto}
+.popup-card{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.92);opacity:0;pointer-events:none;transition:all .35s cubic-bezier(.4,0,.2,1);z-index:141;width:640px;max-width:92vw;background:#fff;border-radius:10px;overflow:hidden;display:flex;flex-wrap:wrap;box-shadow:0 40px 80px -30px rgba(0,0,0,.4)}
+.popup-card.open{transform:translate(-50%,-50%) scale(1);opacity:1;pointer-events:auto}
+
+/* ===== Carousel track (transform is set inline by JS per slide position) ===== */
+.carousel-track{display:flex;transition:transform .5s cubic-bezier(.4,0,.2,1)}
+
+/* ===== Toast ===== */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);z-index:130;background:#4A3339;color:#F7E4EC;padding:14px 22px;border-radius:10px;font-size:14px;font-weight:600;box-shadow:0 16px 34px -14px rgba(0,0,0,.6);display:flex;align-items:center;gap:10px;opacity:0;pointer-events:none;transition:opacity .25s}
+.toast.show{opacity:1;animation:ntoast .3s ease both}
