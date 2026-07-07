@@ -112,18 +112,18 @@
             '<div style="width:26px;height:38px;border-radius:5px;background:linear-gradient(140deg,rgba(255,255,255,.6),' + p.bottle + ')"></div>' +
           '</div>' +
           '<div style="flex:1;min-width:0">' +
-            '<div style="font-family:\'Montserrat\',sans-serif;font-size:18px;font-weight:600;color:#4A3339;line-height:1.1">' + p.name + '</div>' +
+            '<div style="font-family:\'Montserrat\',sans-serif;font-size:18px;font-weight:600;color:var(--brand-deep);line-height:1.1">' + p.name + '</div>' +
             '<div style="font-size:11px;color:#8a6b52;margin:2px 0 8px">' + fmt(p.price) + ' c/u</div>' +
             '<div style="display:flex;align-items:center;gap:10px">' +
               '<div style="display:flex;align-items:center;border:1px solid rgba(201,162,75,.35);border-radius:999px;overflow:hidden">' +
                 '<button data-qty-dec="' + p.key + '" style="width:28px;height:28px;border:none;background:#FBEFF3;cursor:pointer;font-size:16px;color:#8C6A50">−</button>' +
-                '<span style="width:30px;text-align:center;font-weight:700;font-size:13px;color:#4A3339">' + line.qty + '</span>' +
+                '<span style="width:30px;text-align:center;font-weight:700;font-size:13px;color:var(--brand-deep)">' + line.qty + '</span>' +
                 '<button data-qty-inc="' + p.key + '" style="width:28px;height:28px;border:none;background:#FBEFF3;cursor:pointer;font-size:16px;color:#8C6A50">+</button>' +
               '</div>' +
               '<button data-remove="' + p.key + '" style="background:none;border:none;cursor:pointer;color:#B98;font-size:12px;text-decoration:underline">Quitar</button>' +
             '</div>' +
           '</div>' +
-          '<div style="font-weight:700;font-size:15px;color:#4A3339;flex:none">' + fmt(p.price * line.qty) + '</div>' +
+          '<div style="font-weight:700;font-size:15px;color:var(--brand-deep);flex:none">' + fmt(p.price * line.qty) + '</div>' +
         '</div>'
       );
     }).join('');
@@ -133,9 +133,9 @@
     var shippingEl = document.getElementById('cart-shipping-note');
     if (subtotalEl) subtotalEl.textContent = fmt(total);
     if (shippingEl) {
-      shippingEl.textContent = total >= 120000
-        ? '¡Felicidades! Tienes envío GRATIS 🎁'
-        : ('Te faltan ' + fmt(120000 - total) + ' para tu envío GRATIS 🚚');
+      shippingEl.textContent = total >= 175000
+        ? '¡Felicidades! Tienes envío GRATIS'
+        : ('Te faltan ' + fmt(175000 - total) + ' para tu envío GRATIS');
     }
   }
 
@@ -200,7 +200,7 @@
       root.querySelector('.t-city').textContent = t.city;
       root.querySelectorAll('.t-dot').forEach(function (dot, i) {
         dot.style.width = i === idx ? '26px' : '9px';
-        dot.style.background = i === idx ? '#C9A24B' : '#EBD3DD';
+        dot.style.background = i === idx ? 'var(--gold)' : '#EBD3DD';
       });
     }
     root.querySelectorAll('.t-dot').forEach(function (dot, i) {
@@ -219,6 +219,54 @@
     resetInterval();
   }
 
+  /* ---------- Product detail page: one template, product picked via ?id= ---------- */
+  var CATEGORY_LABELS = {
+    femeninas: { label: 'Fragancias femeninas', href: 'femeninas.html' },
+    masculinas: { label: 'Fragancias masculinas', href: 'masculinas.html' },
+    mantequillas: { label: 'Mantequillas corporales', href: 'mantequillas.html' }
+  };
+
+  function initProductPage() {
+    var titleEl = document.getElementById('p-title');
+    if (!titleEl) return;
+    var key = new URLSearchParams(location.search).get('id') || 'f-tiramisu';
+    var p = byKey(key) || byKey('f-tiramisu');
+    var original = Math.round(p.price / 0.88 / 100) * 100;
+    var cat = CATEGORY_LABELS[p.cat] || CATEGORY_LABELS.femeninas;
+
+    document.title = p.name + ' — NOUS Perfumería';
+    titleEl.textContent = p.name;
+
+    var breadcrumb = document.getElementById('p-breadcrumb');
+    if (breadcrumb) breadcrumb.setAttribute('href', cat.href);
+    var breadcrumbText = document.getElementById('p-breadcrumb-text');
+    if (breadcrumbText) breadcrumbText.textContent = cat.label;
+
+    var gallery = document.getElementById('p-gallery-bg');
+    if (gallery) gallery.style.background = 'linear-gradient(150deg,' + p.bg + ',' + p.bottle + ')';
+    document.querySelectorAll('[data-bottle-part]').forEach(function (el) {
+      var part = el.getAttribute('data-bottle-part');
+      el.style.background = part === 'body'
+        ? 'linear-gradient(140deg,rgba(255,255,255,.5),' + p.bottle + ' 65%)'
+        : p.bottle;
+    });
+    var bottleName = document.getElementById('p-bottle-name');
+    if (bottleName) bottleName.textContent = p.name;
+
+    var badge = document.getElementById('p-badge');
+    if (badge) { if (p.badge) badge.textContent = p.badge; else badge.style.display = 'none'; }
+
+    var accords = document.getElementById('p-accords');
+    if (accords) accords.innerHTML = p.tag.split(' · ').map(function (w) { return '<span>' + w + '</span>'; }).join('·');
+
+    var priceEl = document.getElementById('p-price');
+    if (priceEl) priceEl.textContent = fmt(p.price);
+    var originalEl = document.getElementById('p-original');
+    if (originalEl) originalEl.textContent = fmt(original);
+
+    document.querySelectorAll('.p-add-btn').forEach(function (btn) { btn.setAttribute('data-add', p.key); });
+  }
+
   /* ---------- Carousels (sliding track with cyclic tail-pad, mobile "peek") ---------- */
   function initCarousel(root, perPage) {
     var track = root.querySelector('.carousel-track');
@@ -231,8 +279,25 @@
 
     function layout() {
       var mobile = window.innerWidth <= 640;
-      var step = mobile ? 1 : Math.min(perPage, n);
-      var itemViewportPct = mobile ? 88 : (100 / step);
+      track.innerHTML = '';
+
+      if (mobile) {
+        // Native horizontal scroll-snap: every card in DOM order, each one
+        // taking ~82% of the viewport so the next card peeks at the edge.
+        // No JS paging needed — the user swipes directly.
+        track.style.width = '';
+        track.style.transform = '';
+        items.forEach(function (el) {
+          var wrap = el.cloneNode(true);
+          wrap.style.cssText = 'flex:0 0 82%;width:82%;box-sizing:border-box;padding:0 7px;scroll-snap-align:center';
+          track.appendChild(wrap);
+        });
+        if (dotsEl) dotsEl.innerHTML = '';
+        return;
+      }
+
+      var step = Math.min(perPage, n);
+      var itemViewportPct = 100 / step;
       var totalPages = Math.max(1, Math.ceil(n / step));
       page = ((page % totalPages) + totalPages) % totalPages;
       var start = page * step;
@@ -241,13 +306,14 @@
 
       // Rebuild the track with n original items + padCount cyclic clones so the
       // last page never shows a short/empty row.
-      track.innerHTML = '';
       var all = items.concat(items.slice(0, padCount));
       var total = all.length;
       var pct = 100 / total;
       all.forEach(function (el) {
         var wrap = el.cloneNode(true);
         wrap.style.flex = '0 0 ' + pct.toFixed(4) + '%';
+        wrap.style.boxSizing = 'border-box';
+        wrap.style.padding = '0 12px';
         track.appendChild(wrap);
       });
       track.style.width = (total * itemViewportPct) + '%';
@@ -257,7 +323,7 @@
         dotsEl.innerHTML = '';
         for (var i = 0; i < totalPages; i++) {
           var dot = document.createElement('button');
-          dot.style.cssText = 'border:none;cursor:pointer;padding:0;border-radius:999px;height:9px;transition:all .3s;width:' + (i === page ? '26px' : '9px') + ';background:' + (i === page ? '#F771A1' : '#EBD3DD');
+          dot.style.cssText = 'border:none;cursor:pointer;padding:0;border-radius:999px;height:9px;transition:all .3s;width:' + (i === page ? '26px' : '9px') + ';background:' + (i === page ? 'var(--brand)' : '#EBD3DD');
           (function (i) { dot.addEventListener('click', function () { page = i; layout(); }); })(i);
           dotsEl.appendChild(dot);
         }
@@ -305,7 +371,6 @@
       resultsGrid.style.display = 'grid';
       noResults.style.display = 'none';
       resultsGrid.innerHTML = matches.map(productCardHtml).join('');
-      bindAddButtons(resultsGrid);
     }
 
     inputs.forEach(function (el) {
@@ -318,7 +383,8 @@
       ? '<span style="position:absolute;top:0;left:0;background:#111;color:#fff;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:6px 12px">' + p.badge + '</span>'
       : '';
     return (
-      '<div class="prod-card" style="width:100%;background:#fff;border-radius:0;overflow:hidden;display:flex;flex-direction:column">' +
+      '<div class="prod-card" style="width:100%;background:#fff;border-radius:0;overflow:hidden;display:flex;flex-direction:column;position:relative">' +
+        '<a class="prod-card-link" href="product.html?id=' + p.key + '" aria-label="Ver producto"></a>' +
         '<div class="prod-card-img" style="position:relative;aspect-ratio:3/4;overflow:hidden;background:' + p.bg + ';display:flex;align-items:flex-end;justify-content:center;padding-bottom:28px">' +
           badge +
           '<div style="width:80px;filter:drop-shadow(0 12px 16px rgba(0,0,0,.22))">' +
@@ -326,28 +392,22 @@
             '<div style="width:36px;height:9px;margin:0 auto;background:' + p.bottle + ';opacity:.72"></div>' +
             '<div style="position:relative;width:80px;height:108px;border-radius:13px;background:linear-gradient(140deg,rgba(255,255,255,.55),' + p.bottle + ' 62%);box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.28)">' +
               '<div style="position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);width:56px;height:48px;background:rgba(255,253,248,.93);border-radius:7px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;border:1px solid rgba(201,162,75,.35)">' +
-                '<span style="font-family:\'Montserrat\',sans-serif;font-size:17px;color:#4A3339">N</span>' +
-                '<span style="font-size:6px;letter-spacing:2px;color:#C9A24B">NOUS</span>' +
+                '<span style="font-family:\'Montserrat\',sans-serif;font-size:17px;color:var(--brand-deep)">N</span>' +
+                '<span style="font-size:6px;letter-spacing:2px;color:var(--gold)">NOUS</span>' +
               '</div>' +
             '</div>' +
           '</div>' +
-          '<button data-add="' + p.key + '" class="prod-hover-bar" style="position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;gap:7px;background:#4A3339;color:#fff;border:none;padding:12px;font-family:\'Montserrat\',sans-serif;font-weight:600;font-size:12px;letter-spacing:.4px;text-transform:uppercase;cursor:pointer">' +
+          '<button data-add="' + p.key + '" class="prod-hover-bar" style="position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;gap:7px;background:var(--cta);color:#fff;border:none;padding:12px;font-family:\'Montserrat\',sans-serif;font-weight:600;font-size:12px;letter-spacing:.4px;text-transform:uppercase;cursor:pointer">' +
             '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M12 5v14M5 12h14"></path></svg> Agregar al carrito' +
           '</button>' +
         '</div>' +
         '<div style="padding:14px 2px 0;display:flex;flex-direction:column;gap:4px;flex:1">' +
-          '<div style="font-family:\'Montserrat\',sans-serif;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:#A3A3A3;font-weight:500">' + p.tag + '</div>' +
-          '<div style="font-family:\'Montserrat\',sans-serif;font-size:13.5px;font-weight:700;color:#111;line-height:1.3;text-transform:uppercase">' + p.name + '</div>' +
-          '<div style="margin-top:auto;padding-top:6px"><span style="font-family:\'Montserrat\',sans-serif;font-size:14px;font-weight:600;color:#A3A3A3">' + fmt(p.price) + '</span></div>' +
+          '<div style="font-family:\'Montserrat\',sans-serif;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);font-weight:500">' + p.tag + '</div>' +
+          '<div style="font-family:\'Montserrat\',sans-serif;font-size:13.5px;font-weight:700;color:#111;line-height:1.3;text-transform:uppercase"><a href="product.html?id=' + p.key + '" style="color:inherit;text-decoration:none">' + p.name + '</a></div>' +
+          '<div style="margin-top:auto;padding-top:6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span style="font-family:\'Montserrat\',sans-serif;font-size:14px;font-weight:600;color:var(--muted)">' + fmt(p.price) + '</span><span style="font-size:11px;color:#C7B8BC;text-decoration:line-through">' + fmt(Math.round(p.price / 0.88 / 100) * 100) + '</span><span style="background:var(--blush);color:#8C2B4E;font-size:9px;font-weight:700;padding:2px 5px">-12%</span></div>' +
         '</div>' +
       '</div>'
     );
-  }
-
-  function bindAddButtons(scope) {
-    (scope || document).querySelectorAll('[data-add]').forEach(function (btn) {
-      btn.addEventListener('click', function () { Cart.add(btn.getAttribute('data-add')); });
-    });
   }
 
   /* ---------- Category page view toggle (grid / list) ---------- */
@@ -380,6 +440,7 @@
     function close(dismissForGood) {
       overlay.classList.remove('open');
       card.classList.remove('open');
+      if (dismissForGood) localStorage.setItem('nous_popup_dismissed', '1');
       if (sideTab) sideTab.style.display = dismissForGood ? 'block' : 'none';
     }
 
@@ -398,7 +459,11 @@
       });
     }
 
-    if (!sessionStorage.getItem('nous_popup_shown')) {
+    // Once dismissed, stay dismissed across pages/reloads — just show the
+    // little side tab instead of nagging with the popup again.
+    if (localStorage.getItem('nous_popup_dismissed')) {
+      if (sideTab) sideTab.style.display = 'block';
+    } else if (!sessionStorage.getItem('nous_popup_shown')) {
       sessionStorage.setItem('nous_popup_shown', '1');
       setTimeout(open, 1200);
     }
@@ -408,13 +473,15 @@
   document.addEventListener('DOMContentLoaded', function () {
     renderCart();
     renderCountdown();
+    initProductPage();
     setInterval(renderCountdown, 1000);
 
-    bindAddButtons(document);
     document.addEventListener('click', function (e) {
+      var add = e.target.closest && e.target.closest('[data-add]');
       var inc = e.target.closest && e.target.closest('[data-qty-inc]');
       var dec = e.target.closest && e.target.closest('[data-qty-dec]');
       var rem = e.target.closest && e.target.closest('[data-remove]');
+      if (add) Cart.add(add.getAttribute('data-add'));
       if (inc) Cart.changeQty(inc.getAttribute('data-qty-inc'), 1);
       if (dec) Cart.changeQty(dec.getAttribute('data-qty-dec'), -1);
       if (rem) Cart.remove(rem.getAttribute('data-remove'));
